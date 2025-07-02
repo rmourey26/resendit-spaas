@@ -142,11 +142,34 @@ export function AIWorkflowExample() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="lead-qualification">Lead Qualification</TabsTrigger>
-              <TabsTrigger value="customer-onboarding">Customer Onboarding</TabsTrigger>
-              <TabsTrigger value="content-generation">Content Generation</TabsTrigger>
-            </TabsList>
+            {/* Mobile-optimized tabs with horizontal scroll */}
+            <div className="w-full overflow-x-auto">
+              <TabsList className="w-full sm:w-auto grid grid-cols-1 sm:grid-cols-3 h-auto p-1 bg-muted rounded-lg">
+                <div className="flex sm:contents overflow-x-auto">
+                  <TabsTrigger
+                    value="lead-qualification"
+                    className="text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                  >
+                    <span className="hidden sm:inline">Lead Qualification</span>
+                    <span className="sm:hidden">Lead Qual.</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="customer-onboarding"
+                    className="text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                  >
+                    <span className="hidden sm:inline">Customer Onboarding</span>
+                    <span className="sm:hidden">Onboarding</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="content-generation"
+                    className="text-xs sm:text-sm px-3 sm:px-4 py-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                  >
+                    <span className="hidden sm:inline">Content Generation</span>
+                    <span className="sm:hidden">Content</span>
+                  </TabsTrigger>
+                </div>
+              </TabsList>
+            </div>
 
             <TabsContent value="lead-qualification" className="space-y-4 pt-4">
               <div className="flex items-center gap-2">

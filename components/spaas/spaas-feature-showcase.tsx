@@ -168,7 +168,7 @@ function IoTSensorsContent() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        <Image src="/placeholder.svg?height=400&width=600" alt="IoT Smart Sensors" fill className="object-cover" />
+        <Image src="/images/spaas/feature-iot-sensors.png" alt="IoT Smart Sensors" fill className="object-cover" />
       </motion.div>
     </MotionDiv>
   )
@@ -183,7 +183,12 @@ function AIOptimizationContent() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        <Image src="/placeholder.svg?height=400&width=600" alt="AI Optimization Engine" fill className="object-cover" />
+        <Image
+          src="/images/spaas/feature-ai-optimization.png"
+          alt="AI Optimization Engine"
+          fill
+          className="object-cover"
+        />
       </motion.div>
       <div className="space-y-6">
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white">AI Optimization Engine</h3>
@@ -289,7 +294,7 @@ function BlockchainContent() {
         transition={{ delay: 0.2, duration: 0.5 }}
       >
         <Image
-          src="/placeholder.svg?height=400&width=600"
+          src="/images/spaas/feature-blockchain-verification.png"
           alt="Blockchain Verification"
           fill
           className="object-cover"
@@ -309,7 +314,7 @@ function SustainabilityContent() {
         transition={{ delay: 0.2, duration: 0.5 }}
       >
         <Image
-          src="/placeholder.svg?height=400&width=600"
+          src="/images/spaas/feature-sustainability-tracking.png"
           alt="Sustainability Tracking"
           fill
           className="object-cover"
@@ -418,7 +423,12 @@ function AnalyticsContent() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        <Image src="/placeholder.svg?height=400&width=600" alt="Real-time Analytics" fill className="object-cover" />
+        <Image
+          src="/images/spaas/feature-analytics-dashboard.png"
+          alt="Real-time Analytics"
+          fill
+          className="object-cover"
+        />
       </motion.div>
     </MotionDiv>
   )
@@ -433,7 +443,12 @@ function MobileContent() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        <Image src="/placeholder.svg?height=400&width=600" alt="Mobile Integration" fill className="object-cover" />
+        <Image
+          src="/images/spaas/feature-mobile-integration.png"
+          alt="Mobile Integration"
+          fill
+          className="object-cover"
+        />
       </motion.div>
       <div className="space-y-6">
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Mobile Integration</h3>

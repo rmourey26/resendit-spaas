@@ -5,7 +5,7 @@ import type React from "react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
-import { Database } from "lucide-react"
+import { Database, Layers } from "lucide-react"
 
 interface MainNavProps {
   items?: {
@@ -21,13 +21,19 @@ export function MainNav({ items }: MainNavProps) {
   const pathname = usePathname()
 
   const navItems = [
-    ...(items || []),
+    {
+      title: "Ecosystem",
+      href: "/ecosystem",
+      icon: <Layers className="h-4 w-4" />,
+      variant: "ghost",
+    },
     {
       title: "Embeddings",
       href: "/ai-suite/embeddings",
       icon: <Database className="h-4 w-4" />,
       variant: "ghost",
     },
+    ...(items || []),
   ]
 
   return (
