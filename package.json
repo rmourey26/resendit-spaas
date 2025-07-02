@@ -51,7 +51,7 @@
     "jspdf": "^2.5.1",
     "lucide-react": "^0.454.0",
     "mysql": "latest",
-    "next": "14.2.16",
+    "next": "14.2.30",
     "next-themes": "latest",
     "next-transpile-modules": "latest",
     "postgres": "latest",
