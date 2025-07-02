@@ -1,0 +1,3754 @@
+openapi: 3.0.3
+info:
+  title: Resend-It Platform API
+  description: API for the Resend-It Platform - Digital Business Cards, NFTs, Shipping, and AI Business Suite
+  version: 1.1.0
+  contact:
+    name: Resend-It Support
+    email: support@resendit.app
+    url: https://resendit.app/support
+servers:
+  - url: https://api.resendit.com/v1
+    description: Production server
+  - url: https://staging-api.resendit.app/v1
+    description: Staging server
+  - url: http://localhost:3000/api
+    description: Local development
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    SupabaseAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Supabase JWT token prefixed with 'Bearer '
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "An error occurred while processing your request"
+        code:
+          type: string
+          example: "auth/invalid-credentials"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        company:
+          type: string
+        job_title:
+          type: string
+        website:
+          type: string
+          format: uri
+        linkedin_url:
+          type: string
+          format: uri
+        avatar_url:
+          type: string
+          format: uri
+        company_logo_url:
+          type: string
+          format: uri
+        waddress:
+          type: string
+          description: Wallet address
+        xhandle:
+          type: string
+          description: Twitter/X handle
+        username:
+          type: string
+        public_id:
+          type: string
+          format: uuid
+        public_access:
+          type: boolean
+        card_style:
+          $ref: '#/components/schemas/BusinessCardStyle'
+
+    BusinessCardStyle:
+      type: object
+      properties:
+        backgroundColor:
+          type: string
+          example: "#ffffff"
+        textColor:
+          type: string
+          example: "#333333"
+        primaryColor:
+          type: string
+          example: "#3b82f6"
+        backgroundImage:
+          type: string
+          format: uri
+          nullable: true
+        logo:
+          type: string
+          format: uri
+          nullable: true
+
+    BusinessCard:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        businesscard_name:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        style:
+          $ref: '#/components/schemas/BusinessCardStyle'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        public_id:
+          type: string
+          format: uuid
+
+    NFT:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        profile_id:
+          type: string
+          format: uuid
+        tx_hash:
+          type: string
+        token_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    SuiNFT:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        profile_id:
+          type: string
+          format: uuid
+        object_id:
+          type: string
+        tx_digest:
+          type: string
+        image_url:
+          type: string
+          format: uri
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    IoTSensorReading:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        temperature:
+          type: object
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+              enum: [C, F]
+        humidity:
+          type: object
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+              default: "%"
+        pressure:
+          type: object
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+              default: "hPa"
+        shock:
+          type: object
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+              default: "G"
+        light:
+          type: object
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+              default: "lux"
+        battery:
+          type: object
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+              default: "%"
+
+    LocationPoint:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        latitude:
+          type: number
+        longitude:
+          type: number
+        altitude:
+          type: number
+          nullable: true
+        accuracy:
+          type: number
+          nullable: true
+        facility_type:
+          type: string
+          enum: [origin, destination, warehouse, customs, transit_point, delivery_point]
+          nullable: true
+        facility_name:
+          type: string
+          nullable: true
+        dwell_time:
+          type: number
+          description: Time spent at this location in minutes
+          nullable: true
+
+    SensorAlert:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [temperature_high, temperature_low, humidity_high, humidity_low, shock, battery_low, light_detected, location_deviation]
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        timestamp:
+          type: string
+          format: date-time
+        message:
+          type: string
+        threshold:
+          type: number
+        value:
+          type: number
+
+    Address:
+      type: object
+      properties:
+        name:
+          type: string
+        street:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+
+    Shipping:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        tracking_number:
+          type: string
+        status:
+          type: string
+          enum: [pending, in_transit, delivered, delayed, cancelled, exception]
+        origin_address:
+          $ref: '#/components/schemas/Address'
+        destination_address:
+          $ref: '#/components/schemas/Address'
+        shipping_date:
+          type: string
+          format: date-time
+          nullable: true
+        estimated_delivery:
+          type: string
+          format: date-time
+          nullable: true
+        actual_delivery:
+          type: string
+          format: date-time
+          nullable: true
+        carrier:
+          type: string
+        service_level:
+          type: string
+        package_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          nullable: true
+        weight:
+          type: number
+          nullable: true
+        dimensions:
+          type: object
+          properties:
+            length:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+            unit:
+              type: string
+              enum: [cm, in]
+          nullable: true
+        shipping_cost:
+          type: number
+          nullable: true
+        currency:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        public_id:
+          type: string
+          format: uuid
+        iot_sensor_id:
+          type: string
+          nullable: true
+        is_refrigerated:
+          type: boolean
+          default: false
+        temperature_range:
+          type: object
+          properties:
+            min:
+              type: number
+            max:
+              type: number
+            unit:
+              type: string
+              enum: [C, F]
+          nullable: true
+        sensor_readings:
+          type: array
+          items:
+            $ref: '#/components/schemas/IoTSensorReading'
+          nullable: true
+        location_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationPoint'
+          nullable: true
+        sensor_alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorAlert'
+          nullable: true
+        current_location:
+          $ref: '#/components/schemas/LocationPoint'
+          nullable: true
+        transit_events:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              event_type:
+                type: string
+              location:
+                $ref: '#/components/schemas/LocationPoint'
+              description:
+                type: string
+          nullable: true
+
+    ReusablePackage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        package_id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        dimensions:
+          type: object
+          properties:
+            length:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+            unit:
+              type: string
+              enum: [cm, in]
+        weight_capacity:
+          type: number
+        material:
+          type: string
+          nullable: true
+        reuse_count:
+          type: integer
+        status:
+          type: string
+          enum: [available, in_use, damaged, retired]
+        location_id:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        iot_sensor_id:
+          type: string
+          nullable: true
+
+    ShippingAnalytics:
+      type: object
+      properties:
+        shipping_day:
+          type: string
+          format: date
+        total_shipments:
+          type: integer
+        avg_estimated_delivery_days:
+          type: number
+        avg_actual_delivery_days:
+          type: number
+        total_cost:
+          type: number
+        avg_cost:
+          type: number
+        total_weight:
+          type: number
+        avg_weight:
+          type: number
+        delivered_count:
+          type: integer
+        in_transit_count:
+          type: integer
+        delayed_count:
+          type: integer
+
+    PackageUtilization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        package_id:
+          type: string
+        name:
+          type: string
+        reuse_count:
+          type: integer
+        status:
+          type: string
+        shipment_count:
+          type: integer
+        last_used_date:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        days_since_creation:
+          type: integer
+        reuses_per_day:
+          type: number
+
+    AIModel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        provider:
+          type: string
+        model_id:
+          type: string
+        description:
+          type: string
+          nullable: true
+        capabilities:
+          type: array
+          items:
+            type: string
+        parameters:
+          type: object
+        cost_per_1k_tokens:
+          type: number
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AIAgent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        system_prompt:
+          type: string
+          nullable: true
+        model_id:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        parameters:
+          type: object
+        tools:
+          type: array
+          items:
+            type: object
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        max_tokens:
+          type: integer
+
+    AIWorkflow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        steps:
+          type: array
+          items:
+            type: object
+        trigger_type:
+          type: string
+          nullable: true
+        trigger_config:
+          type: object
+        is_active:
+          type: boolean
+        user_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AIWorkflowRun:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workflow_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+          nullable: true
+        results:
+          type: object
+        error:
+          type: string
+          nullable: true
+        user_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CrmConnection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        provider:
+          type: string
+          enum: [salesforce, crmone, netsuite]
+        name:
+          type: string
+        api_key:
+          type: string
+          nullable: true
+        refresh_token:
+          type: string
+          nullable: true
+        access_token:
+          type: string
+          nullable: true
+        instance_url:
+          type: string
+          format: uri
+          nullable: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        last_sync_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CrmContact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        connection_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        external_id:
+          type: string
+        first_name:
+          type: string
+          nullable: true
+        last_name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        company:
+          type: string
+          nullable: true
+        job_title:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        last_contacted:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+          nullable: true
+        custom_fields:
+          type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CrmDeal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        connection_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        external_id:
+          type: string
+        name:
+          type: string
+        stage:
+          type: string
+          nullable: true
+        amount:
+          type: number
+          nullable: true
+        currency:
+          type: string
+          nullable: true
+        close_date:
+          type: string
+          format: date-time
+          nullable: true
+        probability:
+          type: number
+          nullable: true
+        contact_id:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        custom_fields:
+          type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CrmActivity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        connection_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        external_id:
+          type: string
+        type:
+          type: string
+          enum: [call, email, meeting, task]
+        subject:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+        completed_date:
+          type: string
+          format: date-time
+          nullable: true
+        contact_id:
+          type: string
+          format: uuid
+          nullable: true
+        deal_id:
+          type: string
+          format: uuid
+          nullable: true
+        custom_fields:
+          type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Embedding:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        content_type:
+          type: string
+          enum: [shipping, crm_contact, document, business_card, custom]
+        content_id:
+          type: string
+          format: uuid
+          nullable: true
+        content:
+          type: string
+        embedding:
+          type: array
+          items:
+            type: number
+        model:
+          type: string
+        dimensions:
+          type: integer
+        metadata:
+          type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    EmbeddingCluster:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        algorithm:
+          type: string
+          enum: [kmeans, dbscan, hierarchical]
+        parameters:
+          type: object
+        embedding_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        clusters:
+          type: array
+          items:
+            type: object
+            properties:
+              cluster_id:
+                type: integer
+              embedding_ids:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+              centroid:
+                type: array
+                items:
+                  type: number
+              metadata:
+                type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AnomalyDetection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        algorithm:
+          type: string
+          enum: [isolation_forest, local_outlier_factor, one_class_svm]
+        parameters:
+          type: object
+        embedding_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        anomalies:
+          type: array
+          items:
+            type: object
+            properties:
+              embedding_id:
+                type: string
+                format: uuid
+              score:
+                type: number
+              is_anomaly:
+                type: boolean
+              metadata:
+                type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    DeveloperTool:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        tool_type:
+          type: string
+        configuration:
+          type: object
+        description:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        user_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ShopifyConnection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        shop_name:
+          type: string
+          example: "my-awesome-store"
+        access_token:
+          type: string
+          description: Encrypted Shopify access token
+        scopes:
+          type: string
+          example: "read_products,read_orders"
+        status:
+          type: string
+          enum: [connected, disconnected, pending_auth, error]
+        connected_at:
+          type: string
+          format: date-time
+        last_sync_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ShopifyOrderOptimizationRequest:
+      type: object
+      required:
+        - shopify_order_id
+      properties:
+        shopify_order_id:
+          type: string
+          description: The ID of the order from Shopify.
+        connection_id:
+          type: string
+          format: uuid
+          description: The ID of the user's Shopify connection.
+
+    ShopifyPackageRecommendation:
+      type: object
+      properties:
+        package_type:
+          type: string
+          example: "Small Recycled Box A"
+        dimensions:
+          type: object
+          properties:
+            length:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+            unit:
+              type: string
+              enum: [cm, in]
+        estimated_co2_savings_kg:
+          type: number
+          example: 0.05
+        reasoning:
+          type: string
+          example: "Optimized for product size and reduced void fill."
+
+    SustainabilityEventLogRequest:
+      type: object
+      required:
+        - event_type
+        - entity_id
+        - metrics
+      properties:
+        event_type:
+          type: string
+          enum: [shipment_packaged, package_reused, material_recycled]
+          example: "shipment_packaged"
+        entity_id:
+          type: string
+          description: "ID of the entity (e.g., shipment_id, package_id)"
+          example: "shp_123abc"
+        entity_type:
+          type: string
+          description: "Type of the entity (e.g., shopify_order, internal_shipment)"
+          example: "shopify_order"
+        metrics:
+          type: object
+          properties:
+            package_type_used:
+              type: string
+              example: "Small Recycled Box A"
+            co2_saved_kg:
+              type: number
+              example: 0.05
+            recycled_content_percentage:
+              type: number
+              example: 80
+        timestamp:
+          type: string
+          format: date-time
+          description: "Optional, defaults to now if not provided"
+
+    UserSustainabilitySummary:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        total_co2_saved_kg:
+          type: number
+          example: 15.75
+        total_packages_optimized:
+          type: integer
+          example: 350
+        total_recycled_materials_used_kg:
+          type: number
+          example: 50.2
+        period_start_date:
+          type: string
+          format: date
+        period_end_date:
+          type: string
+          format: date
+
+paths:
+  # Authentication Endpoints
+  /auth/signup:
+    post:
+      summary: Register a new user
+      operationId: signUp
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - full_name
+                - email
+                - company
+                - website
+                - password
+              properties:
+                full_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                company:
+                  type: string
+                job_title:
+                  type: string
+                website:
+                  type: string
+                linkedin_url:
+                  type: string
+                avatar_url:
+                  type: string
+                company_logo_url:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Account created successfully"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/signin:
+    post:
+      summary: Sign in a user
+      operationId: signIn
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: User signed in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  session:
+                    type: object
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/signout:
+    post:
+      summary: Sign out the current user
+      operationId: signOut
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User signed out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/forgot-password:
+    post:
+      summary: Request a password reset
+      operationId: forgotPassword
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Password reset email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "If an account with that email exists, we've sent a password reset link"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/reset-password:
+    post:
+      summary: Reset password with token
+      operationId: resetPassword
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - password
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Password has been reset successfully"
+        '400':
+          description: Invalid input or token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Token not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Profile Endpoints
+  /profile:
+    get:
+      summary: Get the current user's profile
+      operationId: getProfile
+      tags:
+        - Profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Update the current user's profile
+      operationId: updateProfile
+      tags:
+        - Profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                company:
+                  type: string
+                job_title:
+                  type: string
+                website:
+                  type: string
+                linkedin_url:
+                  type: string
+                avatar_url:
+                  type: string
+                company_logo_url:
+                  type: string
+                waddress:
+                  type: string
+                xhandle:
+                  type: string
+                username:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profile/style:
+    put:
+      summary: Update the profile card style
+      operationId: updateProfileStyle
+      tags:
+        - Profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusinessCardStyle'
+      responses:
+        '200':
+          description: Profile style updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profile/public-id:
+    post:
+      summary: Ensure the profile has a public ID
+      operationId: ensureProfileHasPublicId
+      tags:
+        - Profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Public ID ensured
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  public_id:
+                    type: string
+                    format: uuid
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Business Card Endpoints
+  /business-cards:
+    get:
+      summary: Get all business cards for the current user
+      operationId: getBusinessCards
+      tags:
+        - Business Cards
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Business cards retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BusinessCard'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new business card
+      operationId: createBusinessCard
+      tags:
+        - Business Cards
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - style
+              properties:
+                name:
+                  type: string
+                businesscard_name:
+                  type: string
+                style:
+                  $ref: '#/components/schemas/BusinessCardStyle'
+      responses:
+        '201':
+          description: Business card created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessCard'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /business-cards/{id}:
+    get:
+      summary: Get a specific business card
+      operationId: getBusinessCard
+      tags:
+        - Business Cards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Business card retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessCard'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Business card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Update a business card
+      operationId: updateBusinessCard
+      tags:
+        - Business Cards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                businesscard_name:
+                  type: string
+                style:
+                  $ref: '#/components/schemas/BusinessCardStyle'
+      responses:
+        '200':
+          description: Business card updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessCard'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Business card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a business card
+      operationId: deleteBusinessCard
+      tags:
+        - Business Cards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Business card deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Business card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # NFT Endpoints
+  /nfts:
+    get:
+      summary: Get all NFTs for the current user
+      operationId: getNFTs
+      tags:
+        - NFTs
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: NFTs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NFT'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Mint a new NFT
+      operationId: mintNFT
+      tags:
+        - NFTs
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - profileId
+                - name
+              properties:
+                profileId:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+      responses:
+        '201':
+          description: NFT minted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  nft:
+                    $ref: '#/components/schemas/NFT'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sui-nfts:
+    post:
+      summary: Mint a new Sui NFT
+      operationId: mintSuiNFT
+      tags:
+        - NFTs
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - profileId
+                - name
+              properties:
+                profileId:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                description:
+                  type: string
+                imageUrl:
+                  type: string
+                  format: uri
+      responses:
+        '201':
+          description: Sui NFT minted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  nftId:
+                    type: string
+                  nftData:
+                    $ref: '#/components/schemas/SuiNFT'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Shipping Endpoints
+  /shipping:
+    get:
+      summary: Get all shipping records for the current user
+      operationId: getShippingData
+      tags:
+        - Shipping
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Shipping records retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shipping'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new shipping record
+      operationId: createShippingRecord
+      tags:
+        - Shipping
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tracking_number
+                - carrier
+                - service_level
+                - origin_address
+                - destination_address
+              properties:
+                tracking_number:
+                  type: string
+                carrier:
+                  type: string
+                service_level:
+                  type: string
+                origin_address:
+                  $ref: '#/components/schemas/Address'
+                destination_address:
+                  $ref: '#/components/schemas/Address'
+                shipping_date:
+                  type: string
+                  format: date-time
+                estimated_delivery:
+                  type: string
+                  format: date-time
+                package_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                weight:
+                  type: number
+                dimensions:
+                  type: object
+                  properties:
+                    length:
+                      type: number
+                    width:
+                      type: number
+                    height:
+                      type: number
+                    unit:
+                      type: string
+                      enum: [cm, in]
+                shipping_cost:
+                  type: number
+                currency:
+                  type: string
+                  default: USD
+                notes:
+                  type: string
+                iot_sensor_id:
+                  type: string
+                is_refrigerated:
+                  type: boolean
+                  default: false
+                temperature_range:
+                  type: object
+                  properties:
+                    min:
+                      type: number
+                    max:
+                      type: number
+                    unit:
+                      type: string
+                      enum: [C, F]
+      responses:
+        '201':
+          description: Shipping record created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Shipping'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /shipping/{id}:
+    get:
+      summary: Get a specific shipping record
+      operationId: getShippingRecord
+      tags:
+        - Shipping
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Shipping record retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipping'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Shipping record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Update a shipping record
+      operationId: updateShippingRecord
+      tags:
+        - Shipping
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tracking_number:
+                  type: string
+                status:
+                  type: string
+                  enum: [pending, in_transit, delivered, delayed, cancelled, exception]
+                carrier:
+                  type: string
+                service_level:
+                  type: string
+                origin_address:
+                  $ref: '#/components/schemas/Address'
+                destination_address:
+                  $ref: '#/components/schemas/Address'
+                shipping_date:
+                  type: string
+                  format: date-time
+                estimated_delivery:
+                  type: string
+                  format: date-time
+                actual_delivery:
+                  type: string
+                  format: date-time
+                package_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                weight:
+                  type: number
+                dimensions:
+                  type: object
+                  properties:
+                    length:
+                      type: number
+                    width:
+                      type: number
+                    height:
+                      type: number
+                    unit:
+                      type: string
+                      enum: [cm, in]
+                shipping_cost:
+                  type: number
+                currency:
+                  type: string
+                notes:
+                  type: string
+                is_refrigerated:
+                  type: boolean
+                temperature_range:
+                  type: object
+                  properties:
+                    min:
+                      type: number
+                    max:
+                      type: number
+                    unit:
+                      type: string
+                      enum: [C, F]
+      responses:
+        '200':
+          description: Shipping record updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Shipping'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Shipping record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /shipping/{id}/sensor-data:
+    get:
+      summary: Get IoT sensor data for a shipping record
+      operationId: getShippingSensorData
+      tags:
+        - Shipping
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sensor data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      sensor_readings:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/IoTSensorReading'
+                      location_history:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LocationPoint'
+                      sensor_alerts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SensorAlert'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Shipping record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /shipping/analytics:
+    get:
+      summary: Get shipping analytics
+      operationId: getShippingAnalytics
+      tags:
+        - Shipping
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Shipping analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShippingAnalytics'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Package Endpoints
+  /packages:
+    get:
+      summary: Get all reusable packages
+      operationId: getReusablePackages
+      tags:
+        - Packages
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Reusable packages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReusablePackage'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new reusable package
+      operationId: createReusablePackage
+      tags:
+        - Packages
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReusablePackage'
+      responses:
+        '201':
+          description: Reusable package created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/ReusablePackage'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /packages/{id}:
+    put:
+      summary: Update a reusable package
+      operationId: updateReusablePackage
+      tags:
+        - Packages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                dimensions:
+                  type: object
+                  properties:
+                    length:
+                      type: number
+                    width:
+                      type: number
+                    height:
+                      type: number
+                    unit:
+                      type: string
+                      enum: [cm, in]
+                weight_capacity:
+                  type: number
+                material:
+                  type: string
+                status:
+                  type: string
+                  enum: [available, in_use, damaged, retired]
+                location_id:
+                  type: string
+                metadata:
+                  type: object
+      responses:
+        '200':
+          description: Reusable package updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/ReusablePackage'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Reusable package not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /packages/utilization:
+    get:
+      summary: Get package utilization data
+      operationId: getPackageUtilization
+      tags:
+        - Packages
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Package utilization data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PackageUtilization'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # AI Business Suite Endpoints
+  /ai/models:
+    get:
+      summary: Get all available AI models
+      operationId: getAIModels
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: AI models retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AIModel'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ai/agents:
+    get:
+      summary: Get all AI agents for the current user
+      operationId: getAIAgents
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: AI agents retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AIAgent'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new AI agent
+      operationId: createAgent
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - model_id
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                system_prompt:
+                  type: string
+                model_id:
+                  type: string
+                parameters:
+                  type: object
+                tools:
+                  type: array
+                  items:
+                    type: string
+                max_tokens:
+                  type: integer
+                is_active:
+                  type: boolean
+                  default: true
+      responses:
+        '201':
+          description: AI agent created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/AIAgent'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ai/agents/{id}:
+    put:
+      summary: Update an AI agent
+      operationId: updateAgent
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                system_prompt:
+                  type: string
+                model_id:
+                  type: string
+                parameters:
+                  type: object
+                tools:
+                  type: array
+                  items:
+                    type: string
+                max_tokens:
+                  type: integer
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: AI agent updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/AIAgent'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: AI agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete an AI agent
+      operationId: deleteAgent
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: AI agent deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: AI agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ai/agents/{id}/execute:
+    post:
+      summary: Execute an AI agent
+      operationId: executeAgent
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+      responses:
+        '200':
+          description: AI agent executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  response:
+                    type: string
+                  data:
+                    type: object
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: AI agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ai/workflows:
+    get:
+      summary: Get all AI workflows for the current user
+      operationId: getAIWorkflows
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: AI workflows retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AIWorkflow'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new AI workflow
+      operationId: createWorkflow
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - steps
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                steps:
+                  type: array
+                  items:
+                    type: object
+                trigger_type:
+                  type: string
+                trigger_config:
+                  type: object
+                is_active:
+                  type: boolean
+                  default: true
+      responses:
+        '201':
+          description: AI workflow created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/AIWorkflow'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ai/workflows/{id}/execute:
+    post:
+      summary: Execute an AI workflow
+      operationId: executeWorkflow
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                input:
+                  type: object
+      responses:
+        '200':
+          description: AI workflow executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: AI workflow not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ai/supply-chain/optimize:
+    post:
+      summary: Optimize supply chain
+      operationId: optimizeSupplyChain
+      tags:
+        - AI Business Suite
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+                - origin
+                - destination
+              properties:
+                items:
+                  type: string
+                packages:
+                  type: string
+                origin:
+                  type: string
+                destination:
+                  type: string
+      responses:
+        '200':
+          description: Supply chain optimized successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # CRM Endpoints
+  /crm/connections:
+    get:
+      summary: Get all CRM connections for the current user
+      operationId: getCrmConnections
+      tags:
+        - CRM
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: CRM connections retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CrmConnection'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new CRM connection
+      operationId: createCrmConnection
+      tags:
+        - CRM
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - provider
+              properties:
+                name:
+                  type: string
+                provider:
+                  type: string
+                  enum: [salesforce, crmone, netsuite]
+                api_key:
+                  type: string
+                refresh_token:
+                  type: string
+                access_token:
+                  type: string
+                instance_url:
+                  type: string
+                  format: uri
+                expires_at:
+                  type: string
+                  format: date-time
+                is_active:
+                  type: boolean
+                  default: true
+      responses:
+        '201':
+          description: CRM connection created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/CrmConnection'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /crm/connections/{id}:
+    put:
+      summary: Update a CRM connection
+      operationId: updateCrmConnection
+      tags:
+        - CRM
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                provider:
+                  type: string
+                  enum: [salesforce, crmone, netsuite]
+                api_key:
+                  type: string
+                refresh_token:
+                  type: string
+                access_token:
+                  type: string
+                instance_url:
+                  type: string
+                  format: uri
+                expires_at:
+                  type: string
+                  format: date-time
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: CRM connection updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/CrmConnection'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: CRM connection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a CRM connection
+      operationId: deleteCrmConnection
+      tags:
+        - CRM
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: CRM connection deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: CRM connection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /crm/connections/{id}/sync:
+    post:
+      summary: Sync data from a CRM connection
+      operationId: syncCrmData
+      tags:
+        - CRM
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: CRM data synced successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      contacts:
+                        type: integer
+                      deals:
+                        type: integer
+                      activities:
+                        type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: CRM connection not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /crm/contacts:
+    get:
+      summary: Get all CRM contacts for the current user
+      operationId: getCrmContacts
+      tags:
+        - CRM
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: connection_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: CRM contacts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CrmContact'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /crm/deals:
+    get:
+      summary: Get all CRM deals for the current user
+      operationId: getCrmDeals
+      tags:
+        - CRM
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: connection_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: CRM deals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CrmDeal'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /crm/activities:
+    get:
+      summary: Get all CRM activities for the current user
+      operationId: getCrmActivities
+      tags:
+        - CRM
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: connection_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: CRM activities retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CrmActivity'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Embedding Endpoints
+  /embeddings:
+    get:
+      summary: Get all embeddings for the current user
+      operationId: getEmbeddings
+      tags:
+        - Embeddings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: content_type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [shipping, crm_contact, document, business_card, custom]
+      responses:
+        '200':
+          description: Embeddings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Embedding'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new embedding
+      operationId: createEmbedding
+      tags:
+        - Embeddings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content_type
+                - content
+              properties:
+                content_type:
+                  type: string
+                  enum: [shipping, crm_contact, document, business_card, custom]
+                content_id:
+                  type: string
+                  format: uuid
+                content:
+                  type: string
+                model:
+                  type: string
+                metadata:
+                  type: object
+      responses:
+        '201':
+          description: Embedding created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Embedding'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /embeddings/search:
+    post:
+      summary: Search embeddings by similarity
+      operationId: searchEmbeddings
+      tags:
+        - Embeddings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                content_type:
+                  type: string
+                  enum: [shipping, crm_contact, document, business_card, custom]
+                limit:
+                  type: integer
+                  default: 10
+                threshold:
+                  type: number
+                  default: 0.7
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        embedding:
+                          $ref: '#/components/schemas/Embedding'
+                        similarity:
+                          type: number
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /embeddings/clusters:
+    post:
+      summary: Create embedding clusters
+      operationId: createEmbeddingClusters
+      tags:
+        - Embeddings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - algorithm
+                - embedding_ids
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                algorithm:
+                  type: string
+                  enum: [kmeans, dbscan, hierarchical]
+                parameters:
+                  type: object
+                embedding_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '201':
+          description: Embedding clusters created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmbeddingCluster'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /embeddings/anomalies:
+    post:
+      summary: Detect anomalies in embeddings
+      operationId: detectAnomalies
+      tags:
+        - Embeddings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - algorithm
+                - embedding_ids
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                algorithm:
+                  type: string
+                  enum: [isolation_forest, local_outlier_factor, one_class_svm]
+                parameters:
+                  type: object
+                embedding_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '201':
+          description: Anomaly detection completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnomalyDetection'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # E-commerce Integration Endpoints
+  /integrations/shopify/authorize:
+    post:
+      summary: Initiate Shopify OAuth Connection
+      operationId: initiateShopifyAuth
+      tags:
+        - E-commerce Integrations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Redirect URL for Shopify OAuth
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authorize_url:
+                    type: string
+                    format: uri
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /integrations/shopify/callback:
+    get:
+      summary: Handle Shopify OAuth Callback
+      operationId: handleShopifyCallback
+      tags:
+        - E-commerce Integrations
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: shop
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shopify connection successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Shopify store connected successfully."
+                  connection:
+                    $ref: '#/components/schemas/ShopifyConnection'
+        '400':
+          description: Invalid callback parameters or error from Shopify
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /integrations/shopify/status:
+    get:
+      summary: Get Shopify Connection Status
+      operationId: getShopifyConnectionStatus
+      tags:
+        - E-commerce Integrations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Shopify connection status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShopifyConnection'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No Shopify connection found for this user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /integrations/shopify/sync/orders:
+    post:
+      summary: Trigger Manual Sync of Shopify Orders
+      operationId: syncShopifyOrders
+      tags:
+        - E-commerce Integrations
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                connection_id:
+                  type: string
+                  format: uuid
+                  description: Specific connection ID if user has multiple, otherwise inferred.
+                since_date:
+                  type: string
+                  format: date
+                  description: Optional. Sync orders created or updated since this date.
+      responses:
+        '202':
+          description: Shopify order sync process initiated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Shopify order synchronization process started."
+                  job_id:
+                    type: string
+                    format: uuid
+        '400':
+          description: Bad Request (e.g., no active connection)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # AI Packaging Optimization for E-commerce
+  /ai/packaging/optimize/shopify:
+    post:
+      summary: Optimize Packaging for a Shopify Order
+      operationId: optimizeShopifyPackaging
+      tags:
+        - AI Business Suite
+        - E-commerce Integrations
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShopifyOrderOptimizationRequest'
+      responses:
+        '200':
+          description: Packaging recommendations for the Shopify order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShopifyPackageRecommendation'
+        '400':
+          description: Invalid input (e.g., order not found, connection issue)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Shopify order or connection not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Sustainability (AetherNet PoC) Endpoints
+  /sustainability/events:
+    post:
+      summary: Log a Sustainability-Related Event
+      operationId: logSustainabilityEvent
+      tags:
+        - Sustainability
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SustainabilityEventLogRequest'
+      responses:
+        '201':
+          description: Sustainability event logged successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  event_id:
+                    type: string
+                    format: uuid
+        '400':
+          description: Invalid input for the event.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sustainability/summary:
+    get:
+      summary: Get User's Sustainability Metrics Summary
+      operationId: getUserSustainabilitySummary
+      tags:
+        - Sustainability
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [last_30_days, last_90_days, year_to_date, all_time]
+            default: last_30_days
+      responses:
+        '200':
+          description: Aggregated sustainability metrics for the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSustainabilitySummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Profile
+    description: User profile management
+  - name: Business Cards
+    description: Digital business card operations
+  - name: NFTs
+    description: NFT minting and management
+  - name: Shipping
+    description: Shipping and logistics operations
+  - name: Packages
+    description: Reusable package management
+  - name: Packaging Orders
+    description: Custom packaging order management
+  - name: AI Business Suite
+    description: AI-powered tools and services
+  - name: CRM
+    description: CRM integration and data synchronization
+  - name: Embeddings
+    description: Vector embedding management and search
+  - name: E-commerce Integrations
+    description: Connecting with e-commerce platforms like Shopify
+  - name: Sustainability
+    description: Tracking and reporting sustainability metrics (AetherNet PoC)

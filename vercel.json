@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "app/api/supabase/edge-functions/route.ts": {
+      "runtime": "vercel/nodejs@22.10.0"
+    },
+    "app/api/supabase/functions/*.ts": {
+      "runtime": "vercel/nodejs@22.10.0"
+    }
+  },
+  "headers": [
+    {
+      "source": "supabase/functions/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, x-client-info, apikey"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "app/api/supabase/edge-functions/(.*)",
+      "destination": "/supabase/functions/$1"
+    }
+  ],
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["iad1", "sfo1"]
+}
