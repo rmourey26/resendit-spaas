@@ -5,6 +5,33 @@ import { userSchema } from "@/lib/schemas"
 import * as z from "zod"
 import { redirect } from "next/navigation"
 
+export async function loginWithEmailAndPassword(data: {
+        email: string;
+                password: string;
+                }) {
+                        const supabase = await createServerClientForSSR();
+
+                        // Register this immediately after calling createClient!
+                        // Because signInWithOAuth causes a redirect, you need to fetch the
+                        // provider tokens from the callback.
+                        supabase.auth.onAuthStateChange((event, session) => {
+                          if (session && session.provider_token) {
+                              window.localStorage.setItem('oauth_provider_token', session.provider_token)
+                                }
+
+                                  if (session && session.provider_refresh_token) {
+                                      window.localStorage.setItem('oauth_provider_refresh_token', session.provider_refresh_token)
+                                        }
+
+                                          if (event === 'SIGNED_OUT') {
+                                              window.localStorage.removeItem('oauth_provider_token')
+                                                  window.localStorage.removeItem('oauth_provider_refresh_token')
+                                                    }
+                                                    })
+
+                                                            const result = await supabase.auth.signInWithPassword(data);
+                                                                    return JSON.stringify(result);
+                                                                    }
 const signUpSchema = userSchema.extend({
   password: z.string().min(8, "Password must be at least 8 characters long"),
 })
@@ -26,7 +53,23 @@ export async function signUp(formData: z.infer<typeof signUpSchema>) {
     }
 
     const supabase = await createServerClientForSSR()
+// Register this immediately after calling createClient!
+// Because signInWithOAuth causes a redirect, you need to fetch the
+// provider tokens from the callback.
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session && session.provider_token) {
+      window.localStorage.setItem('oauth_provider_token', session.provider_token)
+        }
 
+          if (session && session.provider_refresh_token) {
+              window.localStorage.setItem('oauth_provider_refresh_token', session.provider_refresh_token)
+                }
+
+                  if (event === 'SIGNED_OUT') {
+                      window.localStorage.removeItem('oauth_provider_token')
+                          window.localStorage.removeItem('oauth_provider_refresh_token')
+                            }
+                            })
     const { data, error } = await supabase.auth.signUp({
       email: validatedData.email,
       password: validatedData.password,
@@ -39,7 +82,8 @@ export async function signUp(formData: z.infer<typeof signUpSchema>) {
           linkedin_url: linkedinUrl || "",
           avatar_url: validatedData.avatar_url || "",
           company_logo_url: validatedData.company_logo_url || "",
-        },
+          },
+        emailRedirectTo: 'https://platform.resend-it.com',
       },
     })
 
