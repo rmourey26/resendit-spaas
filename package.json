@@ -37,7 +37,7 @@
     "@tanstack/react-query": "latest",
     "@tanstack/react-query-devtools": "latest",
     "@tanstack/react-table": "latest",
-    "ai": "^2.2.31",
+    "ai": "^5.0.52",
     "bs58": "^5.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
