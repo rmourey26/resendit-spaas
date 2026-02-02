@@ -48,7 +48,7 @@
     "framer-motion": "latest",
     "https": "1.0.0",
     "ipfs-http-client": "latest",
-    "jspdf": "^2.5.1",
+    "jspdf": "^4.1.0",
     "lucide-react": "^0.454.0",
     "mysql": "latest",
     "next": "14.2.16",
